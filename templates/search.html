@@ -1,40 +1,13 @@
-<!doctype html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Search Image Hash</title>
     <!-- Include Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container text-center mt-5">
-        <h1>Search for Image Hash</h1>
-        <form method="post" enctype="multipart/form-data" class="mt-3">
-            <div class="custom-file mb-3">
-                <input type="file" class="custom-file-input" id="customFile" name="file">
-                <label class="custom-file-label" for="customFile">Choose file</label>
-            </div>
-            <button type="submit" class="btn btn-primary">Search</button>
-        </form>
-    </div>
-
-    <!-- Optional Bootstrap JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
-    <!-- JavaScript to make the custom file label work -->
-    <script>
-        // Update the text of the custom file label to match the selected file name
-        $('.custom-file-input').on('change', function() {
-            var fileName = $(this).val().split('\\').pop();
-            $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
-        });
-    </script>
-</body>
-</html>
-
-
-
-
-
+<!doctype html>
+<title>Search Image Hash</title>
+<h1>Search for Image Hash</h1>
+<form method=post enctype=multipart/form-data>
+  <input type=file name=file>
+  <input type=submit value=Search>
+</form>

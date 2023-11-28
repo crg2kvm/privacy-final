@@ -5,7 +5,7 @@ import io
 import sqlite3
 
 app = Flask(__name__)
-
+app.secret_key = 'your_secret_key'
 def imageToString(image):
     im = Image.open(image,'r')
     pixels = list(im.getdata())
@@ -20,6 +20,17 @@ def stringToHash(imgString):
     hash_function.update(imgString.encode())
     return hash_function.hexdigest()
 
+def setup_database():
+    conn = sqlite3.connect('imagehashes.db')
+    c = conn.cursor()
+    c.execute('CREATE TABLE IF NOT EXISTS hashes (hash TEXT)')
+    c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)')
+    conn.commit()
+    conn.close()
+
+setup_database()
+
+
 def save_hash_to_db(image_hash):
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
@@ -31,7 +42,8 @@ def save_hash_to_db(image_hash):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    logged_in = 'username' in session
+    return render_template('index.html', logged_in=logged_in)
 
 def clear_database():
     conn = sqlite3.connect('imagehashes.db')
@@ -104,5 +116,52 @@ def compare_images():
     return render_template('compare.html')
 
 
+
+
+from flask import session, redirect, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = generate_password_hash(password)
+
+        conn = sqlite3.connect('imagehashes.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for('index'))
+    return render_template('signup.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = sqlite3.connect('imagehashes.db')
+        c = conn.cursor()
+        c.execute('SELECT password FROM users WHERE username=?', (username,))
+        user = c.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user[0], password):
+            session['username'] = username
+            return redirect(url_for('index'))
+
+        return 'Invalid username or password'
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
     app.run(debug=True)
+
+

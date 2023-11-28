@@ -1,3 +1,9 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Image Hash App</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
 <!doctype html>
 <html lang="en">
 <head>
@@ -5,12 +11,14 @@
     <title>Image Hash App</title>
 </head>
 <body>
-    <h1>Welcome to the Image Hash App</h1>
-    <p>Choose an option:</p>
-    <ul>
-        <li><a href="/upload">Upload Image</a></li>
-        <li><a href="/search">Search Image</a></li>
-        <li><a href="/clear_db" onclick="return confirm('Are you sure you want to clear the database?');">Clear Database</a></li>
-    </ul>
+    <div class="container text-center">
+        <h1>Welcome to the Image Hash App</h1>
+        <p>Choose an option:</p>
+        <div class="d-flex flex-column align-items-center">
+            <a href="/upload" class="btn btn-primary mb-2">Upload Image</a>
+            <a href="/search" class="btn btn-secondary mb-2">Search Image</a>
+            <a href="/clear_db" class="btn btn-danger mb-2" onclick="return confirm('Are you sure you want to clear the database?');">Clear Database</a>
+        </div>
+    </div>
 </body>
 </html>

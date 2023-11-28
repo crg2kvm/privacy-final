@@ -59,16 +59,30 @@ def setup_database():
             public_key TEXT
         )
     ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS user_images (
+            username TEXT,
+            image_hash TEXT,
+            FOREIGN KEY(username) REFERENCES users(username)
+        )
+    ''')
     conn.commit()
     conn.close()
 
 setup_database()
 
-def save_hash_to_db(image_hash):
+# def save_hash_to_db(image_hash):
+#     conn = sqlite3.connect('imagehashes.db')
+#     c = conn.cursor()
+#     c.execute('CREATE TABLE IF NOT EXISTS hashes (hash TEXT)')
+#     c.execute('INSERT INTO hashes VALUES (?)', (image_hash,))
+#     conn.commit()
+#     conn.close()
+
+def save_hash_to_db_with_user(username, image_hash):
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS hashes (hash TEXT)')
-    c.execute('INSERT INTO hashes VALUES (?)', (image_hash,))
+    c.execute('INSERT INTO user_images (username, image_hash) VALUES (?, ?)', (username, image_hash,))
     conn.commit()
     conn.close()
 
@@ -78,20 +92,45 @@ def index():
     logged_in = 'username' in session
     return render_template('index.html', logged_in=logged_in)
 
-def clear_database():
+def clear_user_entries(username):
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('DELETE FROM hashes')
+    # Delete only entries for the specific user
+    c.execute('DELETE FROM user_images WHERE username=?', (username,))
     conn.commit()
     conn.close()
 
+
 @app.route('/clear_db')
-def clear_db():
-    clear_database()
-    return 'Database cleared'
+def clear_my_entries():
+    if 'username' not in session:
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
+    username = session['username']
+    clear_user_entries(username)
+    return 'Your entries have been cleared'
+
+
+def upload_photo(photo_path):
+    with open(photo_path, 'rb') as file:
+        imgString = imageToString(file)
+        image_hash = stringToHash(imgString)
+
+    if 'username' in session:
+        username = session['username']
+        save_hash_to_db_with_user(username, image_hash)
+        return f"Photo hash: {image_hash} uploaded for user {username}"
+    else:
+        return "User not logged in"
+
+
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
+    if 'username' not in session:
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
     if request.method == 'POST':
         if 'file' not in request.files:
             return 'No file part'
@@ -101,21 +140,32 @@ def upload_file():
         if file:
             imgString = imageToString(io.BytesIO(file.read()))
             image_hash = stringToHash(imgString)
+            
+            username = session['username']  # Retrieve username from session
             if hash_exists_in_db(image_hash):
                 return 'Hash is already in database'
             else:
-                save_hash_to_db(image_hash)
+                save_hash_to_db_with_user(username, image_hash)  # Save hash with username
                 return 'Image hash: ' + image_hash
     return render_template('upload.html')
+
+def get_hashes_by_user(username):
+    conn = sqlite3.connect('imagehashes.db')
+    c = conn.cursor()
+    c.execute('SELECT image_hash FROM user_images WHERE username=?', (username,))
+    hashes = c.fetchall()
+    conn.close()
+    return hashes
 
 
 def hash_exists_in_db(image_hash):
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('SELECT EXISTS(SELECT 1 FROM hashes WHERE hash=? LIMIT 1)', (image_hash,))
+    c.execute('SELECT EXISTS(SELECT 1 FROM user_images WHERE image_hash=? LIMIT 1)', (image_hash,))
     exists = c.fetchone()[0]
     conn.close()
     return exists
+
 
 @app.route('/search', methods=['GET', 'POST'])
 def search_hash():
@@ -194,6 +244,18 @@ def login():
 
         return 'Invalid username or password'
     return render_template('login.html')
+
+#@app.route('/my_uploads', methods=['GET','POST']) 
+@app.route('/my_uploads')
+def my_uploads():
+    if 'username' not in session:
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
+    username = session['username']
+    user_hashes = get_hashes_by_user(username)
+    return render_template('my_uploads.html', user_hashes=user_hashes)
+
+
 
 @app.route('/logout')
 def logout():

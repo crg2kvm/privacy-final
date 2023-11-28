@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Uploads</title>
+</head>
+<body>
+    <div class="container">
+        <h1>My Uploaded Images</h1>
+        <ul>
+            {% for hash in user_hashes %}
+                <li>{{ hash[0] }}</li> <!-- Assuming hash is a tuple with the hash as the first element -->
+            {% else %}
+                <li>No images uploaded yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

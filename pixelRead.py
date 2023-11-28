@@ -84,6 +84,24 @@ def search_hash():
             return message
     return render_template('search.html')
 
+@app.route('/compare', methods=['GET','POST'])
+def compare_images():
+    if request.method == 'POST':
+        file1 = request.files['file1']
+        file2 = request.files['file2']
+
+        if file1 and file2:
+            imgString1 = imageToString(io.BytesIO(file1.read()))
+            imgString2 = imageToString(io.BytesIO(file2.read()))
+
+            hash1 = stringToHash(imgString1)
+            hash2 = stringToHash(imgString2)
+
+            if hash1 == hash2:
+                return "The images have the same hash."
+            else:
+                return "The images have different hashes."
+    return render_template('compare.html')
 
 
 if __name__ == '__main__':

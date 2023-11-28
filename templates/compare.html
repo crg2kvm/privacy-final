@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Compare Images</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #previewContainer img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container text-center mt-5">
+        <h1>Compare Two Images</h1>
+        <button type="submit" class="btn btn-primary">Compare</button>
+        <form id="compareForm" method="post" enctype="multipart/form-data" class="mt-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="custom-file mb-3">
+                        <input type="file" class="custom-file-input" id="image1" name="file1" accept="image/*">
+                        <label class="custom-file-label" for="image1">Choose first image</label>
+                        <div id="previewContainer1" class="mt-3">
+                            <img id="imagePreview1" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="custom-file mb-3">
+                        <input type="file" class="custom-file-input" id="image2" name="file2" accept="image/*">
+                        <label class="custom-file-label" for="image2">Choose second image</label>
+                        <div id="previewContainer2" class="mt-3">
+                            <img id="imagePreview2" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </form>
+        <div id="comparisonResult" class="mt-3"></div>
+    </div>
+
+    <!-- Optional Bootstrap JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript to make the custom file label work -->
+    <script>
+        $('.custom-file-input').on('change', function() {
+            var fileName = $(this).val().split('\\').pop();
+            $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
+        });
+    </script>
+
+    <!-- JavaScript to handle image preview -->
+    <script>
+        function readURL(input, previewId) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    document.getElementById(previewId).src = e.target.result;
+                };
+                
+                reader.readAsDataURL(input.files[0]); // convert to base64 string
+            }
+        }
+
+        $("#image1").change(function() {
+            readURL(this, 'imagePreview1');
+        });
+
+        $("#image2").change(function() {
+            readURL(this, 'imagePreview2');
+        });
+    </script>
+</body>
+</html>

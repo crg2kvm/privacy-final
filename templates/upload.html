@@ -9,6 +9,13 @@
 <body>
     <div class="container text-center mt-5">
         <h1>Upload Image</h1>
+        <p>Choose an image to upload. Once uploaded, the image will be associated with your account.</p>
+
+        <!-- Display upload status message -->
+        {% if message %}
+            <div class="alert alert-info">{{ message }}</div>
+        {% endif %}
+
         <form method="post" enctype="multipart/form-data" class="mt-3">
             <div class="custom-file mb-3">
                 <input type="file" class="custom-file-input" id="customFile" name="file" accept="image/*">
@@ -16,26 +23,29 @@
             </div>
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
+
+        <!-- Link to view all uploads -->
+        <div class="mt-3">
+            <a href="/my_uploads" class="btn btn-secondary">View My Uploads</a>
+        </div>
+
         <div id="previewContainer" class="mt-3">
             <img id="imagePreview" style="max-width: 100%; height: auto;" />
         </div>
     </div>
 
-    <!-- Optional Bootstrap JavaScript -->
+    <!-- Include Bootstrap JavaScript and dependencies -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-    <!-- JavaScript to make the custom file label work -->
+    <!-- JavaScript for custom file label and image preview -->
     <script>
         $('.custom-file-input').on('change', function() {
             var fileName = $(this).val().split('\\').pop();
             $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
         });
-    </script>
 
-    <!-- JavaScript to handle image preview -->
-    <script>
         document.getElementById('customFile').addEventListener('change', function(event) {
             var file = event.target.files[0];
             var reader = new FileReader();
@@ -44,7 +54,6 @@
                 document.getElementById('imagePreview').src = e.target.result;
             };
 
-            // Read the image file as a data URL.
             reader.readAsDataURL(file);
         });
     </script>

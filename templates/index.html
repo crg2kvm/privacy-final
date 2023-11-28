@@ -1,28 +1,27 @@
-<head>
-    <meta charset="UTF-8">
-    <title>Image Hash App</title>
-    <!-- Include Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-</head>
-
-
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Image Hash App</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container text-center">
         <h1>Welcome to the Image Hash App</h1>
         <p>Choose an option:</p>
         <div class="d-flex flex-column align-items-center">
-            <a href="/upload" class="btn btn-primary mb-2">Upload Image</a>
-            <a href="/search" class="btn btn-secondary mb-2">Search Image</a>
-            <a href="/compare" class = "btn btn-success mb-2">Compare Images</a>
-            <a href="/clear_db" class="btn btn-danger mb-2" onclick="return confirm('Are you sure you want to clear the database?');">Clear Database</a>
+            {% if logged_in %}
+                <a href="/upload" class="btn btn-primary mb-2">Upload Image</a>
+                <a href="/clear_db" class="btn btn-danger mb-2" onclick="return confirm('Are you sure you want to clear the database?');">Clear Database</a>
+                <a href="/logout" class="btn btn-warning mb-2">Logout</a>
+            {% else %}
+                <a href="/signup" class="btn btn-primary mb-2">Sign Up</a>
+                <a href="/login" class="btn btn-secondary mb-2">Login</a>
+            {% endif %}
+            <!-- These options are available regardless of login status -->
+            <a href="/search" class="btn btn-success mb-2">Search Image</a>
+            <a href="/compare" class="btn btn-info mb-2">Compare Images</a>
         </div>
     </div>
 </body>
-
 </html>

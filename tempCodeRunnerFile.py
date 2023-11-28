@@ -56,8 +56,11 @@ def upload_file():
         if file:
             imgString = imageToString(io.BytesIO(file.read()))
             image_hash = stringToHash(imgString)
-            save_hash_to_db(image_hash)
-            return 'Image hash: ' + image_hash
+            if hash_exists_in_db(image_hash):
+                return 'Hash is already in database'
+            else:
+                save_hash_to_db(image_hash)
+                return 'Image hash: ' + image_hash
     return render_template('upload.html')
 
 

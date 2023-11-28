@@ -28,7 +28,24 @@ def save_hash_to_db(image_hash):
     conn.commit()
     conn.close()
 
-@app.route('/', methods=['GET', 'POST'])
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+def clear_database():
+    conn = sqlite3.connect('imagehashes.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM hashes')
+    conn.commit()
+    conn.close()
+
+@app.route('/clear_db')
+def clear_db():
+    clear_database()
+    return 'Database cleared'
+
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:

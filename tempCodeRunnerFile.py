@@ -3,6 +3,33 @@ from PIL import Image
 import hashlib
 import io
 import sqlite3
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+
+def generate_rsa_keys():
+    # Generate private key
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+    )
+
+    # Generate public key
+    public_key = private_key.public_key()
+
+    # Serialize private key
+    private_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+    # Serialize public key
+    public_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+    return private_pem, public_pem
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -24,12 +51,18 @@ def setup_database():
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS hashes (hash TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT, 
+            password TEXT,
+            private_key TEXT,
+            public_key TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
 
 setup_database()
-
 
 def save_hash_to_db(image_hash):
     conn = sqlite3.connect('imagehashes.db')
@@ -128,14 +161,20 @@ def signup():
         password = request.form['password']
         hashed_password = generate_password_hash(password)
 
+        # Generate RSA keys
+        private_key, public_key = generate_rsa_keys()
+
         conn = sqlite3.connect('imagehashes.db')
         c = conn.cursor()
-        c.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
+        # Assume you have columns for private_key and public_key in your users table
+        c.execute('INSERT INTO users (username, password, private_key, public_key) VALUES (?, ?, ?, ?)', 
+                  (username, hashed_password, private_key, public_key))
         conn.commit()
         conn.close()
 
         return redirect(url_for('index'))
     return render_template('signup.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

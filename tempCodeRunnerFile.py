@@ -168,14 +168,16 @@ def upload_file():
         if file:
             imgString = imageToString(io.BytesIO(file.read()))
             image_hash = stringToHash(imgString)
-            
+
             username = session['username']  # Retrieve username from session
-            if hash_exists_in_db(image_hash):
+            exists, _ = hash_exists_in_db(image_hash)  # Only check if the hash exists
+            if exists:
                 return 'Hash is already in database'
             else:
                 save_hash_to_db_with_user(username, image_hash)  # Save hash with username
                 return 'Image hash: ' + image_hash
     return render_template('upload.html')
+
 
 def get_hashes_by_user(username):
     conn = sqlite3.connect('imagehashes.db')
@@ -186,13 +188,19 @@ def get_hashes_by_user(username):
     return hashes
 
 
+
 def hash_exists_in_db(image_hash):
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('SELECT EXISTS(SELECT 1 FROM user_images WHERE image_hash=? LIMIT 1)', (image_hash,))
-    exists = c.fetchone()[0]
+    c.execute('SELECT username FROM user_images WHERE image_hash=? LIMIT 1', (image_hash,))
+    result = c.fetchone()
     conn.close()
-    return exists
+    if result:
+        username = result[0]
+        return True, username
+    else:
+        return False, None
+
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -202,10 +210,14 @@ def search_hash():
         if file:
             imgString = imageToString(io.BytesIO(file.read()))
             image_hash = stringToHash(imgString)
-            exists = hash_exists_in_db(image_hash)
-            message = 'Hash exists in database' if exists else 'Hash does not exist in database'
+            exists, username = hash_exists_in_db(image_hash)
+            if exists:
+                message = f'Hash exists in database, uploaded by user: {username}'
+            else:
+                message = 'Hash does not exist in database'
             return message
     return render_template('search.html')
+
 
 @app.route('/compare', methods=['GET','POST'])
 def compare_images():
@@ -273,7 +285,6 @@ def login():
         return 'Invalid username or password'
     return render_template('login.html')
 
-#@app.route('/my_uploads', methods=['GET','POST']) 
 @app.route('/my_uploads')
 def my_uploads():
     if 'username' not in session:
@@ -282,6 +293,7 @@ def my_uploads():
     username = session['username']
     user_hashes = get_hashes_by_user(username)
     return render_template('my_uploads.html', user_hashes=user_hashes)
+
 
 @app.route('/capture_and_upload')
 def capture_and_upload():
@@ -307,7 +319,7 @@ def capture_and_upload():
 
         # Save hash to database
         username = session['username']
-        save_image_with_metadata(username, image_hash,metadata)
+        save_image_with_metadata(username, image_hash, metadata)
         return 'Image captured and hash saved for user'
     else:
         return 'Failed to capture image'

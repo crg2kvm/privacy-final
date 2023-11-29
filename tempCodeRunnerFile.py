@@ -5,6 +5,12 @@ import io
 import sqlite3
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+import cv2
+
+
+
+
+
 
 def generate_rsa_keys():
     # Generate private key
@@ -255,6 +261,34 @@ def my_uploads():
     user_hashes = get_hashes_by_user(username)
     return render_template('my_uploads.html', user_hashes=user_hashes)
 
+@app.route('/capture_and_upload')
+def capture_and_upload():
+    if 'username' not in session:
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
+    videoCaptureObject = cv2.VideoCapture(0)
+    ret, frame = videoCaptureObject.read()
+    videoCaptureObject.release()
+
+    if ret:
+        # Convert the captured frame to PIL Image
+        img = Image.fromarray(frame)
+
+        # Convert the Image to a string
+        imgByteArr = io.BytesIO()
+        img.save(imgByteArr, format='JPEG')
+        imgByteArr = imgByteArr.getvalue()
+        imgString = imageToString(io.BytesIO(imgByteArr))
+
+        # Generate hash
+        image_hash = stringToHash(imgString)
+
+        # Save hash to database
+        username = session['username']
+        save_hash_to_db_with_user(username, image_hash)
+        return 'Image captured and hash saved for user: ' + username
+    else:
+        return 'Failed to capture image'
 
 
 @app.route('/logout')

@@ -5,6 +5,15 @@
     <title>Upload Image</title>
     <!-- Include Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #imagePreview {
+            max-height: 200px; /* Fixed height */
+            width: auto; /* Width is auto to maintain aspect ratio */
+            object-fit: contain; /* Ensures the image is scaled correctly within the fixed dimensions */
+            display: block; /* Center the image */
+            margin: 0 auto 20px; /* Auto margin for center alignment and margin-bottom for spacing */
+        }
+    </style>
 </head>
 <body>
     <div class="container text-center mt-5">
@@ -30,7 +39,7 @@
         </div>
 
         <div id="previewContainer" class="mt-3">
-            <img id="imagePreview" style="max-width: 100%; height: auto;" />
+            <img id="imagePreview" alt="Image Preview" />
         </div>
     </div>
 
@@ -44,17 +53,12 @@
         $('.custom-file-input').on('change', function() {
             var fileName = $(this).val().split('\\').pop();
             $(this).siblings('.custom-file-label').addClass('selected').html(fileName);
-        });
 
-        document.getElementById('customFile').addEventListener('change', function(event) {
-            var file = event.target.files[0];
             var reader = new FileReader();
-            
             reader.onload = function(e) {
                 document.getElementById('imagePreview').src = e.target.result;
             };
-
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(this.files[0]);
         });
     </script>
 </body>

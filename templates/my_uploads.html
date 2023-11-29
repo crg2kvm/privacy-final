@@ -8,8 +8,12 @@
     <div class="container">
         <h1>My Uploaded Images</h1>
         <ul>
-            {% for hash in user_hashes %}
-                <li>{{ hash[0] }}</li> <!-- Assuming hash is a tuple with the hash as the first element -->
+            {% for data in user_data %}
+                <li>
+                    Hash: {{ data[0] }}<br>
+                    Date Taken: {{ data[1] | default('Unknown') }}<br>
+                    Camera Model: {{ data[2] | default('Unknown') }}
+                </li>
             {% else %}
                 <li>No images uploaded yet.</li>
             {% endfor %}

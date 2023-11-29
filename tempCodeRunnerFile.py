@@ -8,7 +8,10 @@ from cryptography.hazmat.primitives import serialization
 import cv2
 
 
-
+def get_image_metadata(image_bytes):
+    with Image.open(io.BytesIO(image_bytes)) as img:
+        metadata = img.info
+    return metadata
 
 
 
@@ -56,7 +59,6 @@ def stringToHash(imgString):
 def setup_database():
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS hashes (hash TEXT)')
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             username TEXT, 
@@ -69,13 +71,30 @@ def setup_database():
         CREATE TABLE IF NOT EXISTS user_images (
             username TEXT,
             image_hash TEXT,
+            photo_date TEXT,
+            camera_model TEXT,
             FOREIGN KEY(username) REFERENCES users(username)
         )
     ''')
     conn.commit()
     conn.close()
 
+
 setup_database()
+
+def save_image_with_metadata(username, image_hash, metadata):
+    photo_date = metadata.get("photo_date", "Unknown")
+    camera_model = metadata.get("camera_model", "Unknown")
+
+    conn = sqlite3.connect('imagehashes.db')
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO user_images (username, image_hash, photo_date, camera_model) 
+        VALUES (?, ?, ?, ?)
+    ''', (username, image_hash, photo_date, camera_model))
+    conn.commit()
+    conn.close()
+
 
 # def save_hash_to_db(image_hash):
 #     conn = sqlite3.connect('imagehashes.db')
@@ -119,15 +138,18 @@ def clear_my_entries():
 
 def upload_photo(photo_path):
     with open(photo_path, 'rb') as file:
-        imgString = imageToString(file)
+        image_bytes = file.read()
+        imgString = imageToString(io.BytesIO(image_bytes))
         image_hash = stringToHash(imgString)
+        metadata = get_image_metadata(image_bytes)
 
     if 'username' in session:
         username = session['username']
-        save_hash_to_db_with_user(username, image_hash)
+        save_image_with_metadata(username, image_hash, metadata)
         return f"Photo hash: {image_hash} uploaded for user {username}"
     else:
         return "User not logged in"
+
 
 
 
@@ -158,7 +180,7 @@ def upload_file():
 def get_hashes_by_user(username):
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('SELECT image_hash FROM user_images WHERE username=?', (username,))
+    c.execute('SELECT image_hash, photo_date, camera_model FROM user_images WHERE username=?', (username,))
     hashes = c.fetchall()
     conn.close()
     return hashes
@@ -279,14 +301,14 @@ def capture_and_upload():
         img.save(imgByteArr, format='JPEG')
         imgByteArr = imgByteArr.getvalue()
         imgString = imageToString(io.BytesIO(imgByteArr))
-
+        metadata = get_image_metadata(imgByteArr)
         # Generate hash
         image_hash = stringToHash(imgString)
 
         # Save hash to database
         username = session['username']
-        save_hash_to_db_with_user(username, image_hash)
-        return 'Image captured and hash saved for user: ' + username
+        save_image_with_metadata(username, image_hash,metadata)
+        return 'Image captured and hash saved for user'
     else:
         return 'Failed to capture image'
 

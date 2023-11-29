@@ -3,21 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>My Uploads</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .uploads-container {
+            max-width: 600px; /* Adjust the width as needed */
+            margin: auto;
+            padding-top: 20px;
+        }
+        .upload-item {
+            background-color: #f8f9fa; /* Light gray background */
+            border: 1px solid #dee2e6; /* Light border */
+            border-radius: 0.25rem; /* Rounded corners */
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>My Uploaded Images</h1>
-        <ul>
+    <div class="container uploads-container">
+        <h1 class="text-center mb-4">My Uploaded Images</h1>
+        <div>
             {% for hash, photo_date, camera_model in user_hashes %}
-                <li>
-                    Hash: {{ hash }}<br>
-                    Date Taken: {{ photo_date | default('Unknown') }}<br>
-                    Camera Model: {{ camera_model | default('Unknown') }}
-                </li>
+                <div class="upload-item">
+                    <strong>Hash:</strong> {{ hash }}<br>
+                    <strong>Date Taken:</strong> {{ photo_date | default('Unknown') }}<br>
+                    <strong>Camera Model:</strong> {{ camera_model | default('Unknown') }}
+                </div>
             {% else %}
-                <li>No images uploaded yet.</li>
+                <div class="text-center">No images uploaded yet.</div>
             {% endfor %}
-        </ul>
+        </div>
     </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>

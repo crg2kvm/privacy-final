@@ -8,6 +8,18 @@ from cryptography.hazmat.primitives import serialization
 import cv2
 
 
+
+
+def username_exists(username):
+    conn = sqlite3.connect('imagehashes.db')
+    c = conn.cursor()
+    c.execute('SELECT EXISTS(SELECT 1 FROM users WHERE username=? LIMIT 1)', (username,))
+    exists = c.fetchone()[0]
+    conn.close()
+    return exists == 1
+
+
+
 def get_image_metadata(image_bytes):
     with Image.open(io.BytesIO(image_bytes)) as img:
         metadata = img.info
@@ -249,6 +261,11 @@ def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+
+        # Check if username already exists
+        if username_exists(username):
+            return 'Username already exists. Please choose a different username.'
+
         hashed_password = generate_password_hash(password)
 
         # Generate RSA keys
@@ -256,7 +273,6 @@ def signup():
 
         conn = sqlite3.connect('imagehashes.db')
         c = conn.cursor()
-        # Assume you have columns for private_key and public_key in your users table
         c.execute('INSERT INTO users (username, password, private_key, public_key) VALUES (?, ?, ?, ?)', 
                   (username, hashed_password, private_key, public_key))
         conn.commit()
@@ -264,6 +280,7 @@ def signup():
 
         return redirect(url_for('index'))
     return render_template('signup.html')
+
 
 
 @app.route('/login', methods=['GET', 'POST'])

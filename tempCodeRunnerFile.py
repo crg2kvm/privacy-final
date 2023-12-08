@@ -337,6 +337,7 @@ def capture_and_upload():
         imgByteArr = imgByteArr.getvalue()
         imgString = imageToString(io.BytesIO(imgByteArr))
         metadata = get_image_metadata(imgByteArr)
+        print(metadata)
         ip_address = request.remote_addr
         #print("Here:",ip_address)
         # Generate hash

@@ -24,11 +24,12 @@
     <div class="container uploads-container">
         <h1 class="text-center mb-4">My Uploaded Images</h1>
         <div>
-            {% for hash, photo_date, camera_model in user_hashes %}
+            {% for hash, photo_date, camera_model, ip_address in user_hashes %}
                 <div class="upload-item">
                     <strong>Hash:</strong> {{ hash }}<br>
                     <strong>Date Taken:</strong> {{ photo_date | default('Unknown') }}<br>
-                    <strong>Camera Model:</strong> {{ camera_model | default('Unknown') }}
+                    <strong>Camera Model:</strong> {{ camera_model | default('Unknown') }}<br>
+                    <strong>IP Address:</strong> {{ ip_address | default('Unknown') }}
                 </div>
             {% else %}
                 <div class="text-center">No images uploaded yet.</div>

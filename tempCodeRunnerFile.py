@@ -85,25 +85,29 @@ def setup_database():
             image_hash TEXT,
             photo_date TEXT,
             camera_model TEXT,
+            ip_address TEXT,
             FOREIGN KEY(username) REFERENCES users(username)
         )
     ''')
+    # c.execute('''
+    #     ALTER TABLE user_images ADD COLUMN ip_address TEXT
+    # ''')
     conn.commit()
     conn.close()
 
 
 setup_database()
 
-def save_image_with_metadata(username, image_hash, metadata):
+def save_image_with_metadata(username, image_hash, metadata, ip_address):
     photo_date = metadata.get("photo_date", "Unknown")
-    camera_model = metadata.get("camera_model", "Unknown")
-
+    camera_model = metadata.get("camera_model")
+    #print("Ip:",ip_address)
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
     c.execute('''
-        INSERT INTO user_images (username, image_hash, photo_date, camera_model) 
-        VALUES (?, ?, ?, ?)
-    ''', (username, image_hash, photo_date, camera_model))
+        INSERT INTO user_images (username, image_hash, photo_date, camera_model, ip_address) 
+        VALUES (?, ?, ?, ?, ?)
+    ''', (username, image_hash, photo_date, camera_model, ip_address))
     conn.commit()
     conn.close()
 
@@ -154,10 +158,12 @@ def upload_photo(photo_path):
         imgString = imageToString(io.BytesIO(image_bytes))
         image_hash = stringToHash(imgString)
         metadata = get_image_metadata(image_bytes)
+        ip_address = request.remote_addr
+
 
     if 'username' in session:
         username = session['username']
-        save_image_with_metadata(username, image_hash, metadata)
+        save_image_with_metadata(username, image_hash, metadata,ip_address)
         return f"Photo hash: {image_hash} uploaded for user {username}"
     else:
         return "User not logged in"
@@ -194,7 +200,7 @@ def upload_file():
 def get_hashes_by_user(username):
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('SELECT image_hash, photo_date, camera_model FROM user_images WHERE username=?', (username,))
+    c.execute('SELECT image_hash, photo_date, camera_model, ip_address FROM user_images WHERE username=?', (username,))
     hashes = c.fetchall()
     conn.close()
     return hashes
@@ -331,12 +337,14 @@ def capture_and_upload():
         imgByteArr = imgByteArr.getvalue()
         imgString = imageToString(io.BytesIO(imgByteArr))
         metadata = get_image_metadata(imgByteArr)
+        ip_address = request.remote_addr
+        #print("Here:",ip_address)
         # Generate hash
         image_hash = stringToHash(imgString)
 
         # Save hash to database
         username = session['username']
-        save_image_with_metadata(username, image_hash, metadata)
+        save_image_with_metadata(username, image_hash, metadata, ip_address)
         return 'Image captured and hash saved for user'
     else:
         return 'Failed to capture image'

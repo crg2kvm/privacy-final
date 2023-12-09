@@ -6,7 +6,7 @@ import sqlite3
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 import cv2
-
+from datetime import datetime
 
 
 
@@ -99,7 +99,8 @@ def setup_database():
 setup_database()
 
 def save_image_with_metadata(username, image_hash, metadata, ip_address):
-    photo_date = metadata.get("photo_date", "Unknown")
+    #print(time.localtime())
+    photo_date = str(datetime.now().strftime("%D %H:%M:%S"))
     camera_model = metadata.get("camera_model")
     #print("Ip:",ip_address)
     conn = sqlite3.connect('imagehashes.db')
@@ -110,6 +111,21 @@ def save_image_with_metadata(username, image_hash, metadata, ip_address):
     ''', (username, image_hash, photo_date, camera_model, ip_address))
     conn.commit()
     conn.close()
+
+def save_image_with_metadata1(username, image_hash, metadata, ip_address):
+    #print(time.localtime())
+    photo_date = str(datetime.now().strftime("%D %H:%M:%S"))
+    camera_model = "Laptop"
+    #print("Ip:",ip_address)
+    conn = sqlite3.connect('imagehashes.db')
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO user_images (username, image_hash, photo_date, camera_model, ip_address) 
+        VALUES (?, ?, ?, ?, ?)
+    ''', (username, image_hash, photo_date, camera_model, ip_address))
+    conn.commit()
+    conn.close()
+
 
 
 # def save_hash_to_db(image_hash):
@@ -345,7 +361,7 @@ def capture_and_upload():
 
         # Save hash to database
         username = session['username']
-        save_image_with_metadata(username, image_hash, metadata, ip_address)
+        save_image_with_metadata1(username, image_hash, metadata, ip_address)
         return 'Image captured and hash saved for user'
     else:
         return 'Failed to capture image'

@@ -137,11 +137,19 @@ def save_image_with_metadata1(username, image_hash, metadata, ip_address):
 #     conn.close()
 
 def save_hash_to_db_with_user(username, image_hash):
+    photo_date = str(datetime.now().strftime("%D %H:%M:%S"))
+    camera_model = "None"
+    ip_address = request.remote_addr
+    #print("Ip:",ip_address)
     conn = sqlite3.connect('imagehashes.db')
     c = conn.cursor()
-    c.execute('INSERT INTO user_images (username, image_hash) VALUES (?, ?)', (username, image_hash,))
+    c.execute('''
+        INSERT INTO user_images (username, image_hash, photo_date, camera_model, ip_address) 
+        VALUES (?, ?, ?, ?, ?)
+    ''', (username, image_hash, photo_date, camera_model, ip_address))
     conn.commit()
     conn.close()
+
 
 
 @app.route('/')
